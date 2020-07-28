@@ -19,7 +19,6 @@ before_script:
 
   - golangci-lint --version
   - golangci-lint run --config=.golangci-lint.yaml
-  - ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --progress
 
 script:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
