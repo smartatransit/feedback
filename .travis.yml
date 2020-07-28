@@ -15,7 +15,7 @@ notifications:
 
 before_script:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.23.6
-  - go install github.com/onsi/ginkgo/ginkgo
+  - go get -u github.com/onsi/ginkgo/ginkgo
 
   - golangci-lint --version
   - golangci-lint run --config=.golangci-lint.yaml
