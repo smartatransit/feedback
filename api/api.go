@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/smartatransit/feedback/db"
 	"github.com/sirupsen/logrus"
+	"github.com/smartatransit/feedback/db"
 )
 
 //Kind is a kind of user beedback
@@ -118,8 +118,6 @@ func (c Client) SaveFeedback(w http.ResponseWriter, r *http.Request) {
 		c.writeErrorResponse(w, http.StatusInternalServerError, "failed to save feedback")
 		return
 	}
-
-	return
 }
 
 type outageReportMetadata struct {
@@ -166,7 +164,6 @@ func (c Client) Health(w http.ResponseWriter, r *http.Request) {
 	})
 
 	statuses = append(statuses, reportStatusFromFeedbackList(outageReports))
-	return
 }
 
 func reportStatusFromFeedbackList(outageReports []db.Feedback) (st Status) {

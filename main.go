@@ -55,5 +55,5 @@ func main() {
 
 	logger.Info(err.Error())
 	fmt.Println("Starting API...")
-	http.ListenAndServe(":8080", srv)
+	_ = http.ListenAndServe(":8080", srv)
 }
