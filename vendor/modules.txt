@@ -7,6 +7,8 @@ github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4/source/httpfs
+# github.com/golang/protobuf v1.4.2
+## explicit
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
@@ -24,5 +26,11 @@ github.com/lib/pq/scram
 # github.com/sirupsen/logrus v1.4.2
 ## explicit
 github.com/sirupsen/logrus
-# golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4
+# golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+## explicit
+# golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1
+## explicit
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+# gopkg.in/yaml.v2 v2.3.0
+## explicit
