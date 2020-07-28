@@ -15,19 +15,20 @@ const (
 	//SaveFeedbackSQL a prepared Postgres statements for saving a new feedback record
 	SaveFeedbackSQL = `
 INSERT INTO feedbacks
-  (session_id, role, received_moment, kind, silenced, message)
-  VALUES ($1, $2, $3, $4, $5, $6)`
+  (session_id, role, kind, message)
+  VALUES ($1, $2, $3, $4)`
 
 	//GetRecentOutagesSQL a prepared Postgres statements for getting recent outages
 	GetRecentOutagesSQL = `
-SELECT * FROM feedbacks
+SELECT id, session_id, role, kind, message, received_moment, silenced FROM feedbacks
   WHERE kind = 'outage'
-    AND received_at > $1
+    AND received_moment > $1
     AND NOT silenced`
 )
 
 //Feedback represents a user feedback record
 type Feedback struct {
+	ID         string
 	SessionID  string
 	Role       string
 	ReceivedAt time.Time
@@ -81,7 +82,7 @@ func (c Client) Migrate(ctx context.Context) error {
 //SaveFeedback saves a single new feedback record
 func (c Client) SaveFeedback(ctx context.Context, fb Feedback) error {
 	_, err := c.pg.ExecContext(ctx, SaveFeedbackSQL,
-		fb.SessionID, fb.Role, fb.ReceivedAt, fb.Kind, fb.Silenced, fb.Message,
+		fb.SessionID, fb.Role, fb.Kind, fb.Message,
 	)
 	if err != nil {
 		return fmt.Errorf("failed saving feedback: %w", err)
@@ -101,12 +102,13 @@ func (c Client) GetRecentOutages(ctx context.Context, since time.Time) ([]Feedba
 	for rows.Next() {
 		var fb Feedback
 		err = rows.Scan(
+			&fb.ID,
 			&fb.SessionID,
 			&fb.Role,
-			&fb.ReceivedAt,
 			&fb.Kind,
-			&fb.Silenced,
 			&fb.Message,
+			&fb.ReceivedAt,
+			&fb.Silenced,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed scanning feedback results: %w", err)
@@ -118,6 +120,6 @@ func (c Client) GetRecentOutages(ctx context.Context, since time.Time) ([]Feedba
 	return result, nil
 }
 
-func(c Client)	TestConnection(ctx context.Context) error{
+func (c Client) TestConnection(ctx context.Context) error {
 	return c.pg.PingContext(ctx)
 }
