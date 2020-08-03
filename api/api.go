@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,10 +33,33 @@ const (
 	ServiceConditionKind Kind = "SERVICE_CONDITION"
 )
 
+//Value is a kind of user beedback
+type Value string
+
+//ValidValues enumerates valid kinds
+var ValidValues = map[Value]struct{}{
+	PositiveValue: {},
+	NegativeValue: {},
+	NeutralValue:  {},
+}
+
+const (
+	//PositiveValue represents a user-submitted outage
+	PositiveValue Value = "POSITIVE"
+
+	//NegativeValue represents a user-submitted comment
+	NegativeValue Value = "NEGATIVE"
+
+	//NeutralValue represents a user-submitted service condition
+	NeutralValue Value = "NEUTRAL"
+)
+
 //SaveFeedbackRequest represents a user feedback record
 type SaveFeedbackRequest struct {
 	Kind    Kind   `json:"kind"`
+	Value   Value  `json:"value"`
 	Message string `json:"message"`
+	Email   string `json:"email"`
 }
 
 //HealthResponse represents a response to the health-check endpoint
@@ -74,6 +98,8 @@ func New(
 	}
 }
 
+var emailRegexp = regexp.MustCompile(`^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$`)
+
 //SaveFeedback saves a feedback using information from the request body as well
 //as from headers forwarded by the API gateway.
 func (c Client) SaveFeedback(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +108,6 @@ func (c Client) SaveFeedback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO change the API gateway!
 	session := r.Header.Get("X-Smarta-Auth-Session")
 	role := r.Header.Get("X-Smarta-Auth-Role")
 	if len(session) == 0 || len(role) == 0 {
@@ -104,6 +129,16 @@ func (c Client) SaveFeedback(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := ValidKinds[Kind(strings.ToUpper(string(reqObj.Kind)))]; !ok {
 		c.writeErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid value `%s` for `kind`", reqObj.Kind))
+		return
+	}
+
+	if _, ok := ValidValues[Value(strings.ToUpper(string(reqObj.Value)))]; !ok {
+		c.writeErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid value `%s` for `value`", reqObj.Value))
+		return
+	}
+
+	if !emailRegexp.Match([]byte(reqObj.Email)) {
+		c.writeErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid value `%s` for `email`", reqObj.Email))
 		return
 	}
 
