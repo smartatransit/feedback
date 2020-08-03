@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -53,7 +52,6 @@ func main() {
 	srv.HandleFunc("/v1/feedback", apiClient.SaveFeedback)
 	srv.HandleFunc("/v1/health", apiClient.Health)
 
-	logger.Info(err.Error())
-	fmt.Println("Starting API...")
+	logger.Info("Starting API...")
 	_ = http.ListenAndServe(":8080", srv)
 }
