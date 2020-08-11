@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	migrate "github.com/golang-migrate/migrate/v4"
 	flags "github.com/jessevdk/go-flags"
 	_ "github.com/lib/pq" //provides the postgres driver for database/sql
 	"github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ import (
 )
 
 var opts struct {
-	PostgresConnectionString  string `long:"postgres-connection-string" env:"POSTGRES_CONNECTION_STRING" required:"true"`
+	PostgresURL               string `long:"postgres-url" env:"POSTGRES_URL" required:"true"`
 	MigrationsPath            string `long:"migrations-path" env:"MIGRATIONS_PATH" default:"/db-migrations/"`
 	OutageReportAlertTTLHours int    `long:"outage-report-alert-ttl-hours" env:"OUTAGE_REPORT_ALERT_TTL_HOURS" default:"48"`
 }
@@ -33,13 +34,20 @@ func main() {
 	logger.SetOutput(os.Stdout)
 	logger.SetLevel(logrus.InfoLevel)
 
-	pg, err := sql.Open("postgres", opts.PostgresConnectionString)
+	database, err := sql.Open("postgres", opts.PostgresURL)
 	if err != nil {
 		logger.Error(err.Error())
 		log.Fatal()
 	}
 
-	dbClient := db.New(opts.MigrationsPath, opts.PostgresConnectionString, pg)
+	migrator, err := migrate.New("file", "file://"+opts.MigrationsPath)
+	if err != nil {
+		logger.Error(err.Error())
+		log.Fatal()
+	}
+
+	dbClient := db.New(database, migrator)
+
 	apiClient := api.New(logger, dbClient)
 
 	err = dbClient.Migrate(context.Background())
