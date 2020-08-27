@@ -1,0 +1,3 @@
+DROP TYPE kind;
+
+DROP TABLE feedbacks CASCADE;
